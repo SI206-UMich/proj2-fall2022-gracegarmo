@@ -78,6 +78,7 @@ def get_listing_information(listing_id):
         number of bedrooms
     )
     """
+
     filename = "html_files/listing_" + str(listing_id) + ".html"
 
     res= []
@@ -125,6 +126,8 @@ def get_listing_information(listing_id):
 
 
         return((policy,place_type,int(bedrooms)))
+    
+
 
 def get_detailed_listing_database(html_file):
     """
@@ -141,8 +144,17 @@ def get_detailed_listing_database(html_file):
     ]
     """
 
+    res = []
 
-    def write_csv(data, filename):
+    search_results = get_listings_from_search_results(html_file) #('Title of Listing 1', 'Cost 1', 'Listing ID 1'),  # format
+    for s_res in search_results:
+        listing_info = get_listing_information(s_res[2]) #(policy number, place type,number of bedrooms)
+        res.append((s_res[0],s_res[1],s_res[2],listing_info[0],listing_info[1],listing_info[2]))
+
+    return res
+
+
+def write_csv(data, filename):
     """
     Write a function that takes in a list of tuples (called data, i.e. the
     one that is returned by get_detailed_listing_database()), sorts the tuples in
@@ -164,6 +176,18 @@ def get_detailed_listing_database(html_file):
 
     This function should not return anything.
     """
+    sorted_data = sorted(data, key=lambda t: t[1])
+
+    f = open(filename, 'w')
+    w = csv.writer(f)
+
+    w.writerow(["Listing Title", "Cost", "Listing ID", "Policy Number", "Place Type", "Number of Bedrooms"])
+    for row in sorted_data:
+        w.writerow(row)
+
+    # close the file
+    f.close()
+    
 
 
 def check_policy_numbers(data):
@@ -185,6 +209,19 @@ def check_policy_numbers(data):
     ]
 
     """
+    bad_policy_numbers = []
+
+    for d in data:
+        if(d[3] != "Exempt" and d[3] != "Pending"):
+            check = re.match('(20[0-9][0-9]-00[0-9][0-9][0-9][0-9]STR)|(STR-000[0-9][0-9][0-9][0-9])', d[3])
+            if(check == None):
+                bad_policy_numbers.append(d[2])
+
+    return bad_policy_numbers
+
+
+    
+
 
 def extra_credit(listing_id):
     """
